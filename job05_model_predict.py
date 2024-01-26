@@ -9,11 +9,11 @@ from tensorflow.keras.utils import to_categorical
 import pickle
 from tensorflow.keras.models import load_model
 
-df = pd.read_csv('./crawling_data/naver_headline_news_20240125.csv')
+df = pd.read_csv('./movie_concat_data_20240126.csv')
 print(df.head())
 df.info()
 
-X = df['titles']
+X = df['text']
 Y = df['category']
 
 with open('./models/label_encoder.pickle', 'rb') as f:
@@ -41,13 +41,13 @@ with open('./models/news_token.pickle', 'rb') as f:
     token = pickle.load(f)
 tokened_x = token.texts_to_sequences(X)
 for i in range(len(tokened_x)):
-    if len(tokened_x[i]) > 20:
-        tokened_x[i] = tokened_x[i][:20]
+    if len(tokened_x[i]) > 218:
+        tokened_x[i] = tokened_x[i][:218]
 print(tokened_x)
 
-x_pad = pad_sequences(tokened_x, 20)
+x_pad = pad_sequences(tokened_x, 218)
 
-model = load_model('./models/news_category_classification_model_0.6720579862594604.h5')
+model = load_model('./models/movie_category_classification_model_0.75.h5')
 preds = model.predict(x_pad)
 
 predicts = []

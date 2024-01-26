@@ -10,12 +10,13 @@ import re
 import time
 import datetime
 
-categories = ['animation', 'action']
+categories = ['drama']
 
 options = ChromeOptions()
 service = ChromeService(executable_path=ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 df_titles = pd.DataFrame()
+num = 0
 
 for category in categories:
     section_url = 'https://serieson.naver.com/v3/movie/products/{}?sortType=POPULARITY_DESC&price=all'.format(category)
@@ -32,10 +33,10 @@ for category in categories:
     except:
         print('driver.get', category)
 
-    for j in range(10):
+    for j in range(33):
         driver.find_element('xpath', '//*[@id="content"]/div[2]/button').click()
         time.sleep(0.5)
-        for i in range(j*30+1, j*30+31, 30):
+        for i in range(j*30+1, j*30+31):
             driver1 = webdriver.Chrome(service=service, options=options)
             try:
                 title = driver.find_element('xpath', '//*[@id="content"]/div[1]/ul/li[{}]/a'.format(i)).get_attribute('href')
@@ -50,6 +51,7 @@ for category in categories:
                 texts.append(text)
                 driver1.close()
             except:
+                titles_real.append('NULL')
                 try:
                     text = driver1.find_element('xpath', '//*[@id="content"]/div[2]/ul/li[1]/div[2]/p').text
                     text = re.compile('[^가-힇]').sub(' ', text)
@@ -57,20 +59,20 @@ for category in categories:
                     print('find element', category, i)
                 except:
                     texts.append('NULL')
-                    titles_real.append('NULL')
                     print('real NULL', category, i)
                 driver1.close()
 
-    # print(len(titles_real))
-    # print(len(texts))
-    df_section_titles = pd.DataFrame()
-    df_section_titles["title"] = titles_real
-    df_section_titles["text"] = texts
-    df_section_titles["category"] = category
+        # print(len(titles_real))
+        # print(len(texts))
+        df_section_titles = pd.DataFrame()
+        df_section_titles["title"] = titles_real
+        df_section_titles["text"] = texts
+        df_section_titles["category"] = category
 
-    # df_section_titles = pd.DataFrame({'title':titles_real, 'text':texts, 'category':categories})
-    df_titles = pd.concat([df_titles, df_section_titles], axis='rows', ignore_index=True)
-df_titles.to_csv('./crawling_data/data.csv')
+        # df_section_titles = pd.DataFrame({'title':titles_real, 'text':texts, 'category':categories})
+        df_titles = pd.concat([df_titles, df_section_titles], axis='rows', ignore_index=True)
+        df_titles.to_csv('./crawling_data/data_drama_{}.csv'.format(num))
+        num += 30
 
 driver.close()
 # print(texts)

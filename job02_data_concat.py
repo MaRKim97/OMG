@@ -9,7 +9,7 @@ import datetime
 #     last_data.append(data_path)
 # print(last_data)
 
-data_path = glob.glob("./crawling_data/*")
+data_path = glob.glob("./crawling_data/data2.csv")
 print(data_path)
 
 df = pd.DataFrame()

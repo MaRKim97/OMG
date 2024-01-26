@@ -27,7 +27,7 @@ model.add(Dense(2, activation='softmax'))
 model.summary()
 
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-fit_hist = model.fit(X_train, Y_train, batch_size=128, epochs=10, validation_data=(X_test, Y_test))
+fit_hist = model.fit(X_train, Y_train, batch_size=10, epochs=100, validation_data=(X_test, Y_test))
 model.save('./models/movie_category_classification_model_{}.h5'.format(fit_hist.history['val_accuracy'][-1]))
 plt.plot(fit_hist.history['val_accuracy'], label='validation accuracy')
 plt.plot(fit_hist.history['accuracy'], label='train accuracy')
