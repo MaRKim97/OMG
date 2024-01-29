@@ -17,7 +17,9 @@ service = ChromeService(executable_path=ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 # 크롬 드라이버 생성 / ChromeDriver는 Selenium이 명령을 내리면 Chrome브라우저에 전달을 하기 위한 중재자 역할을 한다.
 
+
 categories = ['drama']
+
 df_titles = pd.DataFrame()
 
 for category in categories:
@@ -32,9 +34,11 @@ for category in categories:
     except:
         print('driver.get', category)
 
+
     for j in range(33):
         driver.find_element('xpath', '//*[@id="content"]/div[2]/button').click() # 더보기 버튼(태그의 경로) 클릭
         time.sleep(0.5) # 열리는 시간 기다림
+
         for i in range(j*30+1, j*30+31):
             one_movie_driver = webdriver.Chrome(service=service, options=options)
             try:
@@ -45,17 +49,17 @@ for category in categories:
                 one_movie_driver.get(movie_url)
                 time.sleep(0.5)
 
+
                 title = one_movie_driver.find_element('xpath', '//*[@id="content"]/div[2]/div/div[1]/div[1]/strong').text
+
                 print(title, i) # 오류 위치 확인
 
                 text = one_movie_driver.find_element('xpath', '//*[@id="content"]/div[2]/ul/li[1]/div[3]/p').text
                 text = re.compile('[^가-힇]').sub(' ', text)
-                print('text', i) # 오류 위치 확인
 
-                # append가 title부분에서 찍히고 synopsis는 안찍히고 except으로 넘어가는 문제 발생 확인 따라서 append하는 부분을 제일 마지막에 추가
+                print('text', i) # 오류 위치 확인
                 movie_titles.append(title)
                 movie_synopsis.append(text)
-
                 one_movie_driver.close()
             except:
                 # 19금 영화는 따로 분류?
@@ -72,19 +76,26 @@ for category in categories:
                 #     print('real NULL', category, i)
                 one_movie_driver.close()
 
-
+        print('debug03')
         df_section_titles = pd.DataFrame()
+        print(len(movie_titles))
+        print(len(movie_synopsis))
         df_section_titles["title"] = movie_titles
         df_section_titles["synopsis"] = movie_synopsis
         df_section_titles["category"] = category
+        print('debug04')
 
         df_titles = pd.concat([df_titles, df_section_titles], axis='rows', ignore_index=True)
+        print('debug05')
         # concat: 여러개의 동일한 DataFrame합치기
         # ignore_index: 기존 index무시
-        df_titles.to_csv('./crawling_data/data_drama_{}.csv'.format(j*30+1))
+        df_titles.to_csv('./crawling_data/data_animation_{}.csv'.format(j*30+1))
+        print('debug06')
+
         df_titles = pd.DataFrame()
         titles = []
         movie_titles = []
         movie_synopsis = []
+
 
 driver.close()
