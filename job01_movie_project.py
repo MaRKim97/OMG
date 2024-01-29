@@ -11,6 +11,7 @@ import re
 import time
 import datetime
 
+
 options = ChromeOptions()
 service = ChromeService(executable_path=ChromeDriverManager().install())
 # executable_path: 웹 드라이버 절대경로로 호출
@@ -21,6 +22,7 @@ driver = webdriver.Chrome(service=service, options=options)
 categories = ['drama']
 
 df_titles = pd.DataFrame()
+num = 0
 
 for category in categories:
     section_url = 'https://serieson.naver.com/v3/movie/products/{}?sortType=POPULARITY_DESC&price=all'.format(category)
@@ -33,6 +35,7 @@ for category in categories:
 
     except:
         print('driver.get', category)
+
 
 
     for j in range(33):
@@ -62,6 +65,7 @@ for category in categories:
                 movie_synopsis.append(text)
                 one_movie_driver.close()
             except:
+
                 # 19금 영화는 따로 분류?
                 movie_titles.append('NULL')
                 movie_synopsis.append('NULL')
