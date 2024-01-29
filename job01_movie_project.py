@@ -17,7 +17,9 @@ service = ChromeService(executable_path=ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 # 크롬 드라이버 생성 / ChromeDriver는 Selenium이 명령을 내리면 Chrome브라우저에 전달을 하기 위한 중재자 역할을 한다.
 
-categories = ['animation']
+
+categories = ['drama']
+
 df_titles = pd.DataFrame()
 
 for category in categories:
@@ -32,11 +34,11 @@ for category in categories:
     except:
         print('driver.get', category)
 
-    for j in range(1):
-        print('debug01')
+
+    for j in range(33):
         driver.find_element('xpath', '//*[@id="content"]/div[2]/button').click() # 더보기 버튼(태그의 경로) 클릭
         time.sleep(0.5) # 열리는 시간 기다림
-        print('debug02')
+
         for i in range(j*30+1, j*30+31):
             one_movie_driver = webdriver.Chrome(service=service, options=options)
             try:
@@ -46,6 +48,7 @@ for category in categories:
                 print(movie_url)
                 one_movie_driver.get(movie_url)
                 time.sleep(0.5)
+
 
                 title = one_movie_driver.find_element('xpath', '//*[@id="content"]/div[2]/div/div[1]/div[1]/strong').text
 
@@ -88,10 +91,11 @@ for category in categories:
         # ignore_index: 기존 index무시
         df_titles.to_csv('./crawling_data/data_animation_{}.csv'.format(j*30+1))
         print('debug06')
+
         df_titles = pd.DataFrame()
         titles = []
         movie_titles = []
         movie_synopsis = []
-        print('debug07')
+
 
 driver.close()
