@@ -13,7 +13,7 @@ options = ChromeOptions()
 service = ChromeService(executable_path=ChromeDriverManager().install())
 driver = webdriver.Chrome(service=service, options=options)
 
-categories = ['animation']
+categories = ['action', 'comedy', 'drama', 'melo', 'horror', 'sf_fantasy', 'animation', 'documentary']
 df_titles = pd.DataFrame()
 
 # ↓ 시리즈온에서 제목, 줄거리, 카테고리를 포함한 데이터 크롤링 작업 ↓
