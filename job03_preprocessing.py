@@ -8,72 +8,63 @@ from sklearn.preprocessing import LabelEncoder
 from tensorflow.keras.utils import to_categorical
 import pickle
 
-df = pd.read_csv('./movie_concat_data_20240126.csv')
-print(df.head())
-df.info()
+# ↓ 제목, 줄거리, 카테고리를 포함한 데이터 불러오기 ↓
+df = pd.read_csv('./movie_concat_data_20240129.csv')
 
-X = df['text']
+# ↓ 줄거리를 통해 카테고리를 예측하기 위해 아래와 같이 설정 ↓
+X = df['synopsis']
 Y = df['category']
 
+# ↓ 카테고리에 라벨 부여 ↓
 label_encoder = LabelEncoder()
 labeled_y = label_encoder.fit_transform(Y)
-print(labeled_y[:3])
-label = label_encoder.classes_ # label을 무엇을 줬는지 확인 할 수 있다
-print(label)
-with open('./models/label_encoder.pickle', 'wb') as f: # pickle은 바이너리 상태로 그대로 저장 / 예를 들어 문자열을 저장하면 문자열로 숫자형이면 숫자형으로 가져온다
-    pickle.dump(label_encoder, f) # f를 열어서 label_encoder를 dump(저장)한다
-onehot_y = to_categorical(labeled_y)
-print(onehot_y[:3])
-print(X[1:5])
-# 자연어 처리 시작
-okt = Okt() # 형태소 분리를 해준다 / 형태소: 단어 하나하나 짜르는것을 의미?
-temp = []
-# for i in range(len(X)):
-#     X[i] = okt.morphs(X[i])
-# 분리하면 예를들어 ['문재인', '생일', '날', '엔', '산행'] 앞에와 같이 분리해준다 / stem=False: ['말씀드렸다']
-# print(X[:5])
+label = label_encoder.classes_
+print(label) # 결과값: ['action' 'animation' 'melo']
 
+# ↓ 예측하는 과정에서 사용하기위해 pickle확장자 파일로 저장 ↓
+with open('./models/label_encoder.pickle', 'wb') as f:
+    pickle.dump(label_encoder, f)
+
+# ↓ 원-핫 인코딩된 벡터로 변환 ↓
+onehot_y = to_categorical(labeled_y)
+
+# ↓ 형태소 분리 ↓
+okt = Okt()
 for i in range(len(X)):
-    X[i] = okt.morphs(X[i], stem=True) # stem=True를 주면 다음과 같이 원형으로 바꿔준다: [말씀드리다]
-    if i % 10000:
-        print(i)
-print(temp)
-# print(X[0])
-# 한글자짜리는 학습이 안된다 => [등장, 한] 이와같이 분리를 해주는데 '한'은 등장한으로 원래는 등장하다로 분류가 되어야하는데 분리가 완벽하게 되지 않기 때문이다
-# 불용어: 예를들어 그녀는 엄마인지 누나인지 친구인지 누구인지 알 수가 없다 /이와같은 것을 불용어라고한다 => 감탄사, 접미사, 대명사 등이 있다
+    X[i] = okt.morphs(X[i], stem=True)
+
+# ↓ 불용어와 의미학습이 제대로 되지 않는 한글자 단어 제거 ↓
 stopwords = pd.read_csv('./stopwords.csv', index_col=0)
 for j in range(len(X)):
     words = []
     for i in range(len(X[j])):
-        if len(X[j][i]) > 1: # 한글자짜리는 다 제외 하겠다
+        if len(X[j][i]) > 1:
             if X[j][i] not in list(stopwords['stopword']):
                 words.append(X[j][i])
-    X[j] = ' '.join(words)
-# print(X[:5])
+    X[j] = ' '.join(words) # 'a b c 와 같은 형태로 문자열을 만들어줌
 
+# ↓ 토큰화와 및 정수인코딩 ↓
 token = Tokenizer()
-token.fit_on_texts(X)
-tokened_x = token.texts_to_sequences(X)
-wordsize = len(token.word_index) + 1
-# print(tokened_x)
-print(wordsize)
+token.fit_on_texts(X) # 예시: {'오늘': 1, '있어': 2, '주식': 3} 이와 같이 맵핑이 된다
+tokened_x = token.texts_to_sequences(X) # 정수인코딩 시켜준다 / 결과값: [1428, 1429, 818, 819, ...], [314, 30, 43, ...], ...
+wordsize = len(token.word_index) + 1 # 단어의 길이 결과값: 3107
 
-with open('./models/news_token.pickle', 'wb') as f:
+# ↓ 예측하는 과정에서 사용하기위해 pickle확장자 파일로 저장 ↓
+with open('./models/movie_token.pickle', 'wb') as f:
     pickle.dump(token, f)
 
+# ↓ 가장 긴 길이로 패딩해주는 과정 ↓
 max = 0
 for i in range(len(tokened_x)):
     if max < len(tokened_x[i]):
-        max = len(tokened_x[i])
-print(max)
-
+        max = len(tokened_x[i]) # 결과값: 214
 x_pad = pad_sequences(tokened_x, max)
-print(x_pad)
 
+# ↓ 훈련데이터와 테스트데이터로 분리 ↓
 X_train, X_test, Y_train, Y_test = train_test_split(x_pad, onehot_y, test_size=0.2)
 print(X_train.shape, Y_train.shape)
 print(X_test.shape, Y_test.shape)
 
-xy = X_train, X_test, Y_train, Y_test # xy는 형태가 튜플이다
+xy = X_train, X_test, Y_train, Y_test
 xy = np.array(xy, dtype=object)
 np.save('./movie_data_{}_wordsize_{}'.format(max, wordsize), xy)
