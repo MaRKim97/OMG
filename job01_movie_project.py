@@ -46,13 +46,15 @@ for category in categories:
                 time.sleep(0.5)
 
                 title = one_movie_driver.find_element('xpath', '//*[@id="content"]/div[2]/div/div[1]/div[1]/strong').text
-                movie_titles.append(title)
                 print(title, i) # 오류 위치 확인
 
                 text = one_movie_driver.find_element('xpath', '//*[@id="content"]/div[2]/ul/li[1]/div[3]/p').text
                 text = re.compile('[^가-힇]').sub(' ', text)
-                movie_synopsis.append(text)
                 print('text', i) # 오류 위치 확인
+
+                # append가 title부분에서 찍히고 synopsis는 안찍히고 except으로 넘어가는 문제 발생 확인 따라서 append하는 부분을 제일 마지막에 추가
+                movie_titles.append(title)
+                movie_synopsis.append(text)
 
                 one_movie_driver.close()
             except:
